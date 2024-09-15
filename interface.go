@@ -3,13 +3,14 @@ package main
 import (
 	"fmt"
 	"errors"
+    "github.com/P3T3R2002/pokedex/pokeapi"
 )
 
 const start_url string = "https://pokeapi.co/api/v2/location/?offset=0&limit=20"
 const next_compare_url string = "https://pokeapi.co/api/v2/location/?offset=20&limit=20"
 
 type Pokedex struct {
-	current_area	*Area
+	current_area	*pokeapi.Area
 	commands 		map[string]cliCommand
 }
 
@@ -24,8 +25,8 @@ type cliCommand struct {
   //******\\
 
 func pokedex_setup() (Pokedex, error) {
-	area := get_location(start_url)
-	err := update_location(start_url, &area)
+	area := pokeapi.Get_location(start_url)
+	err := pokeapi.Update_location(start_url, &area)
 	if err != nil {
 		return Pokedex{}, err
 	}
@@ -100,12 +101,12 @@ func commandMap_back(pokedex Pokedex) error {
 
 func step(pokedex *Pokedex, dir bool) error {
 	if dir {
-		err := update_location(pokedex.current_area.Next, pokedex.current_area)
+		err := pokeapi.Update_location(pokedex.current_area.Next, pokedex.current_area)
 		if err != nil {
 			return err
 		}
 	} else {
-		err := update_location(pokedex.current_area.Previous, pokedex.current_area)
+		err := pokeapi.Update_location(pokedex.current_area.Previous, pokedex.current_area)
 		if err != nil {
 			return err
 		}
@@ -115,7 +116,7 @@ func step(pokedex *Pokedex, dir bool) error {
 
 //-----------------------------------------------------------------------
 
-func print_map(area *Area, dir bool) {
+func print_map(area *pokeapi.Area, dir bool) {
 	if dir {
 		for _, place := range area.Results {
 			fmt.Println(place.Name)

@@ -6,10 +6,11 @@ import (
 	"io"
 	"net/http"
 	"fmt"
+	"github.com/P3T3R2002/Go/pokedex/pokecache"
 )
 
 type Area struct{
-	Count		int 	`json:"count"`
+	_		int 	`json:"count"`
 	Next		string `json:"next"`
 	Previous	string `json:"previous"`
 	Results		[]Place `json:"results"`
@@ -17,20 +18,20 @@ type Area struct{
 
 type Place struct {
 	Name	string `json:"name"`
-	Url		string `json:"url"`
+	_		string `json:"url"`
 }
      //\\
     //**\\
    //****\\
   //******\\
 
-func get_location(url string) Area {
+func Get_location(url string) Area {
 	return Area{}
 }
 
 	//*********//
 
-func update_location(url string, area *Area) error {
+func Update_location(url string, area *Area) error {
 	res, err := http.Get(url)
 	if err != nil {
 		return err
