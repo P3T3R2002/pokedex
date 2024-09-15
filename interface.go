@@ -24,7 +24,8 @@ type cliCommand struct {
   //******\\
 
 func pokedex_setup() (Pokedex, error) {
-	area, err := get_location(start_url)
+	area := get_location(start_url)
+	err := update_location(start_url, &area)
 	if err != nil {
 		return Pokedex{}, err
 	}
