@@ -11,7 +11,7 @@ import (
 
 func main() {
 	//*********//
-	pokedex, err := pokedex_setup()
+	pokedex, cache, err := pokedex_setup()
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -32,7 +32,7 @@ func main() {
 			return 
 		}
 		//**********//
-		err = pokedex.commands[scanner.Text()].callback(pokedex)
+		err = pokedex.commands[scanner.Text()].callback(pokedex, cache)
 		if err != nil {
 			log.Fatal(err)
 			return 
