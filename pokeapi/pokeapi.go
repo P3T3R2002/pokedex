@@ -6,7 +6,7 @@ import (
 	"io"
 	"net/http"
 	"fmt"
-	"github.com/P3T3R2002/pokedex/pokecache"
+	"github.com/P3T3R2002/pokedex/pokeapi/pokecache"
 )
 
 type Area struct{
