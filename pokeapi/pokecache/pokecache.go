@@ -3,21 +3,20 @@ package pokecache
 import (
 	"sync"
 	"errors"
+	"fmt"
+	//"log"
 )
 
 type Cache struct {
-	cache 	map[string][]map[string]any
+	cache 	map[string]interface{}
 	mu 		*sync.Mutex
 }
-
-type Pokemon struct {
-	pokemon 	string
-}
+	//*********
 
 type Area struct{
-	_		int 	`json:"count"`
-	Next		string `json:"next"`
-	Previous	string `json:"previous"`
+	_			int 	`json:"count"`
+	Next		string 	`json:"next"`
+	Previous	string 	`json:"previous"`
 	Results		[]Place `json:"results"`
 }
 
@@ -25,17 +24,40 @@ type Place struct {
 	Name	string `json:"name"`
 	_		string `json:"url"`
 }
+	//*********
+
+type Location_Area struct {
+	_ 					any 		`json:"encounter_method_rates"`
+	_ 					any 		`json:"location"`
+	_ 					any 		`json:"names"`
+	Pokemon_encounters	[]Encounter 	`json:"pokemon_encounters"`
+}
+
+type Encounter struct {
+	Pokemon 	Pokemon	`json:"pokemon"`
+	_ 			any			`json:"version_details"`
+
+}
+
+type Pokemon struct {
+	Name 	string	`json:"name"`
+	_		string 	`json:"url"`
+}
+
 	   //\\
 	  //**\\
 	 //****\\
 	//******\\
 
 func Create_cache() *Cache {
+	cache := make(map[string]interface{})
+	pokemon := make(map[string][]Encounter)
+	location := make(map[string][]Place)
+	cache["pokemon"] = pokemon
+	cache["location"] = location
+
 	return &Cache{
-		cache:	{
-			pokemon:	[map[string]Pokemon{}],
-			location: 	[map[string][]Place{}, map[string]map[string]string{}],
-		}
+		cache:	cache,
 		mu:		&sync.Mutex{},
 	}
 }
@@ -48,17 +70,16 @@ func Get_location(url string) Area {
 
 	//*********//
 
-func Write_cache(cache *Cache, url string, area *Area) {
+func Write_place_cache(cache *Cache, url string, area *Area) {
 	var places []Place
 	for _, place := range area.Results {
 		places = append(places, Place{Name:place.Name})
 	}
-	dir := map[string]string{}
-	dir["next"] = area.Next
-	dir["prev"] = area.Previous
+	places = append(places, Place{Name:area.Next})
+	places = append(places, Place{Name:area.Previous})
 	cache.mu.Lock()
-	cache.places[url][0] = places
-	cache.places[url][1] = dir
+	assert := cache.cache["location"].(map[string][]Place)
+	assert[url] = places
 	cache.mu.Unlock()
 	return
 
@@ -66,18 +87,49 @@ func Write_cache(cache *Cache, url string, area *Area) {
 
 	//*********//
 
-func Read_cache(cache *Cache, next string, area *Area) (error) {
+func Read_place_cache(cache *Cache, next string, area *Area) (error) {
 	cache.mu.Lock()
-	places, ok := cache.places[next]
-	dir, ko := cache.dir[next]
-	cache.mu.Unlock()
-	if !ok && !ko {
-		return errors.New("Not in cache!")
-	} else if !ok || !ko {
-		return errors.New("Unknown problem in cache!")
+	assert, ok := cache.cache["location"].(map[string][]Place)
+	if !ok {
+		cache.mu.Unlock()
+		return errors.New("Type problem!")
 	}
-	area.Results = places
-	area.Next = dir["next"]
-	area.Previous = dir["prev"]
+	places, ok := assert[next]
+	cache.mu.Unlock()
+	if !ok {
+		return errors.New("Not in cache!")
+	}
+	area.Results = places[0:len(places)-3]
+	area.Next = places[len(places)-2].Name
+	area.Previous = places[len(places)-1].Name
+	return nil
+}
+
+//-----------------------------------------------------------------------
+
+func Write_pokemon_cache(cache *Cache, url string, area *Location_Area) {
+	var encount []Encounter
+	for _, encounter := range area.Pokemon_encounters {
+		encount = append(encount, Encounter{Pokemon: encounter.Pokemon})
+	}
+	cache.mu.Lock()
+	assert := cache.cache["pokemon"].(map[string][]Encounter)
+	assert[url] = encount
+	cache.mu.Unlock()
+	return
+}
+
+	//*********//
+
+func Read_pokemon_cache(cache *Cache, explore string, area *Location_Area) (error) {
+	cache.mu.Lock()
+	assert := cache.cache["pokemon"].(map[string][]Encounter)
+	encount, ok := assert[explore]
+	if !ok {
+		cache.mu.Unlock()
+		return errors.New("Not in cache!")
+	}
+	area.Pokemon_encounters = encount
+	cache.mu.Unlock()
 	return nil
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	//"log"
 	"errors"
     "github.com/P3T3R2002/pokedex/pokeapi"
 	"github.com/P3T3R2002/pokedex/pokeapi/pokecache"
@@ -18,7 +19,7 @@ type Pokedex struct {
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(Pokedex, *pokecache.Cache) error
+	callback    func(Pokedex, *pokecache.Cache, string) error
 }
 	 //\\
     //**\\
@@ -55,19 +56,24 @@ func pokedex_setup() (Pokedex, *pokecache.Cache, error) {
 								description: "Goes backwards on the map",
 								callback:    commandMap_back,
 							},
+							"explore": {
+								name:        "explore",
+								description: "Explores a location and displays the located pokemons",
+								callback:    commandExplore,
+							},
 		},
 	}, cache, nil
 }
 
 //-----------------------------------------------------------------------
 
-func commandExit(_ Pokedex, _ *pokecache.Cache) error {
+func commandExit(_ Pokedex, _ *pokecache.Cache, _ string) error {
 	return errors.New("Exit")
 }
 
 //-----------------------------------------------------------------------
 
-func commandHelp(pokedex Pokedex, _ *pokecache.Cache) error {
+func commandHelp(pokedex Pokedex, _ *pokecache.Cache, _ string) error {
 	fmt.Println("")
 	for _, val := range pokedex.commands {
 		fmt.Printf("%s: %s\n", val.name, val.description)
@@ -78,7 +84,7 @@ func commandHelp(pokedex Pokedex, _ *pokecache.Cache) error {
 
 //-----------------------------------------------------------------------
 
-func commandMap(pokedex Pokedex, cache *pokecache.Cache) error {
+func commandMap(pokedex Pokedex, cache *pokecache.Cache, _ string) error {
 	print_map(pokedex.current_area, true)
 	step(&pokedex, cache, true)
 	return nil
@@ -86,7 +92,7 @@ func commandMap(pokedex Pokedex, cache *pokecache.Cache) error {
 
 //-----------------------------------------------------------------------
 
-func commandMap_back(pokedex Pokedex, cache *pokecache.Cache) error {
+func commandMap_back(pokedex Pokedex, cache *pokecache.Cache, _ string) error {
 	if pokedex.current_area.Next == next_compare_url {
 		fmt.Println("Cant go back!")
 		return nil
@@ -96,6 +102,18 @@ func commandMap_back(pokedex Pokedex, cache *pokecache.Cache) error {
 		return err
 	}
 	print_map(pokedex.current_area, false)
+	return nil
+}
+
+//-----------------------------------------------------------------------
+
+func commandExplore(_ Pokedex, cache *pokecache.Cache, place string) error {
+	url := "https://pokeapi.co/api/v2/location-area/"+place+"-area/"
+	fmt.Println("Pokemon found:")
+	err := pokeapi.Get_pockemon(url, cache)
+	if err != nil {
+		return err
+	}
 	return nil
 }
 
