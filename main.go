@@ -50,6 +50,8 @@ func main() {
 	return 
 }
 
+//-----------------------------------------------------------------------
+
 func Get_command(scanner *bufio.Scanner) (string, string) {
 	var text string
 	scanner.Scan()
