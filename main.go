@@ -24,6 +24,7 @@ func main() {
 	}
 	//*********//
 	for true{
+		fmt.Println("==========")
 		fmt.Println("Commands:")
 		for key, _ := range pokedex.commands {
 			fmt.Println("   "+key)
@@ -41,7 +42,7 @@ func main() {
 			continue
 		}
 		//**********//
-		err = pokedex.commands[text].callback(pokedex, cache, arg)
+		err = pokedex.commands[text].callback(&pokedex, cache, arg)
 		if err != nil {
 			log.Fatal(err)
 			return 
@@ -56,11 +57,20 @@ func Get_command(scanner *bufio.Scanner) (string, string) {
 	var text string
 	scanner.Scan()
 	text = scanner.Text()
-	if text == "explore" {
-		fmt.Printf("Area to explore > ")
-		scanner.Scan()
-		return text, scanner.Text()
-	} else {
-		return text, ""
+	switch text {
+		case "catch":
+			fmt.Printf("Pokemon to catch > ")
+			scanner.Scan()
+			return text, scanner.Text()
+		case "explore":
+			fmt.Printf("Area to explore > ")
+			scanner.Scan()
+			return text, scanner.Text()
+		case "inspect":
+			fmt.Printf("Pokemon to inspect > ")
+			scanner.Scan()
+			return text, scanner.Text()
+		default:
+			return text, ""
 	}
 }
